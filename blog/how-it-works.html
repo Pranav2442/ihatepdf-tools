@@ -1,1 +1,445 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How ihatepdf.cv Works — Building a Client-Side PDF Engine</title>
+  <meta name="description" content="How ihatepdf.cv processes 150MB PDFs entirely in your browser using WebAssembly — memory management, device adaptation, offline-first, and privacy as architecture.">
+  <link rel="canonical" href="https://www.ihatepdf.cv/technical-blog">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Building a Client-Side PDF Engine — ihatepdf.cv">
+  <meta property="og:description" content="WebAssembly, memory management, device-adaptive processing. Full engineering story.">
+  <meta property="article:published_time" content="2025-03-01T00:00:00Z">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Building a Client-Side PDF Engine","description":"How ihatepdf.cv processes 150MB PDFs entirely in your browser using WebAssembly","author":{"@type":"Organization","name":"ihatepdf.cv","url":"https://www.ihatepdf.cv"},"publisher":{"@type":"Organization","name":"ihatepdf.cv","url":"https://www.ihatepdf.cv"},"datePublished":"2025-03-01"}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body { background: #080808; color: #888; font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; font-weight: 300; line-height: 1.8; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    ::selection { background: #222; color: #fff; }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
+    a { text-decoration: none; }
+
+    #scroll-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0%; background: linear-gradient(90deg, #333, #777); z-index: 200; transition: width 0.1s linear; }
+
+    .nav { position: sticky; top: 0; z-index: 100; background: rgba(8,8,8,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.04); height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; }
+    .nav-brand { font-family: 'Fraunces', Georgia, serif; font-size: 1.05rem; font-weight: 600; color: #e0e0e0; letter-spacing: -0.02em; }
+    .nav-brand span { color: #444; font-style: italic; }
+    .nav-links { display: flex; align-items: center; gap: 20px; }
+    .nav-link { font-size: 0.72rem; font-family: 'DM Mono', monospace; color: #333; text-transform: uppercase; letter-spacing: 0.06em; transition: color 0.2s; }
+    .nav-link:hover { color: #777; }
+    .nav-cta { font-size: 0.75rem; color: #888; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 6px 14px; font-weight: 500; transition: all 0.2s; }
+    .nav-cta:hover { color: #fff; background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.15); }
+
+    /* Hero */
+    .post-hero { max-width: 780px; margin: 0 auto; padding: 72px 32px 52px; position: relative; }
+    .post-hero::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 1px; height: 72px; background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.06)); }
+    .post-meta-row { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; flex-wrap: wrap; }
+    .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.68rem; font-family: 'DM Mono', monospace; color: #252525; text-transform: uppercase; letter-spacing: 0.06em; }
+    .breadcrumb a { color: #252525; transition: color 0.2s; }
+    .breadcrumb a:hover { color: #555; }
+    .post-date { font-size: 0.68rem; font-family: 'DM Mono', monospace; color: #333; letter-spacing: 0.04em; border-left: 1px solid #181818; padding-left: 14px; }
+    .post-read { font-size: 0.68rem; font-family: 'DM Mono', monospace; color: #252525; background: rgba(255,255,255,0.03); border: 1px solid #181818; border-radius: 20px; padding: 3px 10px; }
+    .post-tag { font-size: 0.62rem; font-family: 'DM Mono', monospace; color: #252525; background: rgba(255,255,255,0.02); border: 1px solid #141414; border-radius: 3px; padding: 2px 8px; text-transform: uppercase; letter-spacing: 0.1em; }
+    .post-title { font-family: 'Fraunces', Georgia, serif; font-size: clamp(1.7rem, 4.5vw, 2.9rem); font-weight: 700; color: #ececec; line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 22px; }
+    .post-title em { font-style: italic; color: #444; }
+    .post-desc { font-size: 1rem; color: #555; line-height: 1.75; max-width: 620px; font-weight: 300; border-left: 2px solid #181818; padding-left: 20px; margin-bottom: 40px; }
+    .hero-rule { height: 1px; background: linear-gradient(90deg, transparent, #141414 20%, #141414 80%, transparent); }
+
+    /* Layout */
+    .post-layout { max-width: 780px; margin: 0 auto; padding: 0 32px 100px; }
+    @media (min-width: 1160px) {
+      .post-layout { max-width: 1060px; display: grid; grid-template-columns: 180px 1fr; gap: 56px; align-items: start; }
+    }
+
+    /* TOC */
+    .toc { display: none; }
+    @media (min-width: 1160px) {
+      .toc { display: block; position: sticky; top: 80px; padding-top: 40px; }
+      .toc-label { font-size: 0.62rem; font-family: 'DM Mono', monospace; color: #1e1e1e; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 14px; }
+      .toc-list { list-style: none; }
+      .toc-link { font-size: 0.74rem; color: #252525; display: flex; align-items: center; gap: 8px; padding: 4px 0; transition: color 0.2s; line-height: 1.4; }
+      .toc-link::before { content: ''; display: block; width: 14px; height: 1px; background: #1a1a1a; flex-shrink: 0; transition: all 0.2s; }
+      .toc-link:hover { color: #777; }
+      .toc-link:hover::before { width: 22px; background: #444; }
+      .toc-link.active { color: #999; }
+      .toc-link.active::before { width: 22px; background: #555; }
+    }
+
+    /* Post body */
+    .post-body { padding-top: 44px; }
+    .post-body h2 { font-family: 'Fraunces', Georgia, serif; font-size: 1.42rem; font-weight: 600; color: #ddd; letter-spacing: -0.02em; line-height: 1.25; margin: 52px 0 16px; scroll-margin-top: 80px; }
+    .post-body h2:first-child { margin-top: 0; }
+    .post-body h3 { font-size: 0.88rem; font-weight: 500; color: #999; margin: 28px 0 10px; }
+    .post-body p { font-size: 0.95rem; color: #666; line-height: 1.85; margin-bottom: 16px; font-weight: 300; }
+    .post-body p:first-child { font-size: 1rem; color: #777; }
+    .post-body strong { color: #aaa; font-weight: 500; }
+    .post-body em { color: #555; font-style: italic; }
+    .post-body a { color: #777; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.1); text-underline-offset: 3px; transition: all 0.2s; }
+    .post-body a:hover { color: #bbb; text-decoration-color: rgba(255,255,255,0.3); }
+    .post-body pre { background: #0a0a0a; border: 1px solid #141414; border-radius: 10px; padding: 22px 26px; overflow-x: auto; margin: 22px 0 26px; position: relative; }
+    .post-body pre::before { content: ''; position: absolute; top: -1px; left: 28px; right: 28px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent); }
+    .post-body code { font-family: 'DM Mono', ui-monospace, monospace; font-size: 0.8rem; color: #777; line-height: 1.75; }
+    .post-body p code, .post-body li code { background: #0f0f0f; border: 1px solid #1a1a1a; padding: 2px 6px; border-radius: 4px; font-size: 0.82em; color: #888; }
+    .post-body pre code { background: none; border: none; padding: 0; }
+    .post-body ul, .post-body ol { padding-left: 0; margin-bottom: 20px; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .post-body li { font-size: 0.93rem; color: #555; line-height: 1.7; padding-left: 24px; position: relative; font-weight: 300; }
+    .post-body ul li::before { content: '—'; position: absolute; left: 0; color: #222; font-family: 'DM Mono', monospace; }
+    .post-body ol { counter-reset: list-c; }
+    .post-body ol li { counter-increment: list-c; padding-left: 28px; }
+    .post-body ol li::before { content: counter(list-c, decimal-leading-zero); position: absolute; left: 0; color: #1e1e1e; font-family: 'DM Mono', monospace; font-size: 0.72rem; top: 5px; }
+    .post-body li strong { color: #999; font-weight: 500; }
+
+    .blog-rule { height: 1px; margin: 44px 0; background: linear-gradient(90deg, #0d0d0d 0%, #161616 50%, #0d0d0d 100%); }
+
+    .arch-flow { background: #0a0a0a; border: 1px solid #141414; border-radius: 10px; padding: 24px 28px; margin: 24px 0; font-family: 'DM Mono', monospace; font-size: 0.78rem; color: #333; line-height: 2.1; }
+    .arch-flow .hi { color: #666; }
+    .arch-flow .lo { color: #1c1c1c; }
+
+    /* Related tools */
+    .related-tools { margin: 44px 0; padding: 24px 28px; background: rgba(255,255,255,0.015); border: 1px solid #141414; border-radius: 12px; position: relative; overflow: hidden; }
+    .related-tools::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.02) 0%, transparent 70%); pointer-events: none; }
+    .rt-label { font-size: 0.65rem; font-family: 'DM Mono', monospace; color: #252525; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .rt-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .rt-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #555; background: rgba(255,255,255,0.03); border: 1px solid #181818; border-radius: 6px; padding: 7px 14px; transition: all 0.2s; font-weight: 400; }
+    .rt-chip:hover { color: #ccc; border-color: #2a2a2a; background: rgba(255,255,255,0.06); }
+
+    /* CTA */
+    .cta-block { margin: 52px 0 44px; padding: 44px 36px; background: rgba(255,255,255,0.015); border: 1px solid #111; border-radius: 14px; text-align: center; position: relative; overflow: hidden; }
+    .cta-block::before { content: ''; position: absolute; top: -1px; left: 50%; transform: translateX(-50%); width: 100px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent); }
+    .cta-eyebrow { font-size: 0.65rem; font-family: 'DM Mono', monospace; color: #1e1e1e; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 14px; }
+    .cta-heading { font-family: 'Fraunces', Georgia, serif; font-size: 1.55rem; font-weight: 600; color: #ccc; letter-spacing: -0.02em; margin-bottom: 10px; line-height: 1.2; }
+    .cta-sub { font-size: 0.85rem; color: #333; margin-bottom: 26px; }
+    .cta-btn { display: inline-block; padding: 11px 28px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #bbb; font-size: 0.85rem; font-weight: 500; transition: all 0.25s; }
+    .cta-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #fff; transform: translateY(-1px); }
+
+    /* Related posts */
+    .related-posts { margin-top: 60px; padding-top: 44px; border-top: 1px solid #0f0f0f; }
+    .rp-heading { font-family: 'Fraunces', Georgia, serif; font-size: 1rem; font-weight: 600; color: #333; letter-spacing: -0.01em; margin-bottom: 20px; font-style: italic; }
+    .rp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+    .rp-card { display: block; background: rgba(255,255,255,0.015); border: 1px solid #0f0f0f; border-radius: 9px; padding: 18px; transition: all 0.2s; }
+    .rp-card:hover { border-color: #1c1c1c; background: rgba(255,255,255,0.025); transform: translateY(-2px); }
+    .rp-title { font-size: 0.84rem; font-weight: 500; color: #777; margin-bottom: 5px; line-height: 1.4; }
+    .rp-desc { font-size: 0.75rem; color: #252525; line-height: 1.5; margin-bottom: 12px; font-weight: 300; }
+    .rp-link { font-size: 0.72rem; color: #252525; font-family: 'DM Mono', monospace; transition: color 0.2s; }
+    .rp-card:hover .rp-link { color: #555; }
+
+    /* Footer */
+    .post-footer { max-width: 780px; margin: 0 auto; padding: 22px 32px 48px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; border-top: 1px solid #0a0a0a; }
+    .footer-back { font-size: 0.72rem; font-family: 'DM Mono', monospace; color: #222; text-transform: uppercase; letter-spacing: 0.04em; transition: color 0.2s; }
+    .footer-back:hover { color: #555; }
+    .footer-tools { font-size: 0.72rem; font-family: 'DM Mono', monospace; color: #222; background: rgba(255,255,255,0.02); border: 1px solid #111; border-radius: 5px; padding: 6px 14px; text-transform: uppercase; letter-spacing: 0.04em; transition: all 0.2s; }
+    .footer-tools:hover { color: #555; border-color: #222; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    .post-hero { animation: fadeUp 0.6s ease both; }
+    .post-layout { animation: fadeUp 0.6s ease 0.1s both; }
+
+    @media (max-width: 640px) {
+      .post-hero { padding: 44px 20px 36px; }
+      .post-layout { padding: 0 20px 80px; }
+      .cta-block { padding: 32px 22px; }
+      .post-footer { padding: 20px 20px 40px; }
+    }
+  </style>
+</head>
+<body>
+<div id="scroll-bar"></div>
+
+<nav class="nav">
+  <a href="https://www.ihatepdf.cv" class="nav-brand">ihatepdf<span>.</span>cv</a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">← Blog</a>
+    <a href="https://www.ihatepdf.cv" class="nav-cta">Open app →</a>
+  </div>
+</nav>
+
+<header class="post-hero">
+  <div class="post-meta-row">
+    <nav class="breadcrumb">
+      <a href="https://www.ihatepdf.cv">Home</a>
+      <span>›</span>
+      <a href="index.html">Blog</a>
+      <span>›</span>
+      <span style="color:#1e1e1e;">How it works</span>
+    </nav>
+    <span class="post-date">March 2025</span>
+    <span class="post-read">12 min read</span>
+    <span class="post-tag">Engineering</span>
+  </div>
+  <h1 class="post-title">Building a Client-Side<br><em>PDF Engine</em></h1>
+  <p class="post-desc">How ihatepdf.cv processes 150MB files entirely in your browser. WebAssembly, memory management, device adaptation, offline-first architecture — and why privacy-as-architecture is fundamentally different from privacy-as-policy.</p>
+  <div class="hero-rule"></div>
+</header>
+
+<div class="post-layout">
+  <aside class="toc" id="toc-sidebar">
+    <div class="toc-label">On this page</div>
+    <ul class="toc-list" id="toc-list"></ul>
+  </aside>
+
+  <main>
+    <article class="post-body" id="post-body">
+
+      <h2 id="problem">The problem nobody talks about</h2>
+      <p>If you've ever used an online PDF tool, you've accepted a quiet trade-off: your document — the contract, the CV, the medical record — traveled over the internet to a stranger's server, was processed by software you can't inspect, and was stored somewhere under a privacy policy you never read.</p>
+      <p>Processing PDFs is computationally expensive. A 50MB PDF with embedded images needs 200–400MB of RAM. Professional PDF libraries like Ghostscript are written in C — not JavaScript. JavaScript was never designed for heavy binary file manipulation. This is why every major "free" PDF tool — iLovePDF, Smallpdf, Adobe Acrobat online — processes files on servers. It's not laziness. It's a genuine technical constraint.</p>
+      <p><strong>WebAssembly changed that.</strong></p>
+
+      <div class="blog-rule"></div>
+
+      <h2 id="wasm">What WebAssembly actually does</h2>
+      <p>WebAssembly (WASM) is a binary instruction format that lets code written in C, C++, and Rust run inside a browser at near-native speed. The same Ghostscript that Adobe and professional print shops use — compiled to WebAssembly — now runs inside a browser tab.</p>
+      <p><a href="https://www.ihatepdf.cv" target="_blank" rel="noopener">ihatepdf.cv</a> uses three core WebAssembly-powered libraries:</p>
+      <ul>
+        <li><strong>pdf-lib</strong> — PDF manipulation: merging, splitting, watermarks, encryption, metadata. Works at the PDF structure level — copies pages between documents without re-rendering them. That's why merge operations are nearly instant regardless of file size.</li>
+        <li><strong>PDF.js</strong> — Mozilla's PDF rendering engine, same one Firefox uses natively. Converts pages to Canvas elements for pixel-perfect previews and high-DPI image export. Worker architecture offloads heavy parsing to a separate thread, keeping the UI responsive.</li>
+        <li><strong>Ghostscript (WASM)</strong> — compression. The professional-grade engine behind the 60–70% file size reductions. Five simultaneous optimizations: image downsampling via bicubic interpolation, JPEG recompression, font subsetting (up to 90% reduction), metadata stripping, stream recompression. Text and vectors completely unaffected.</li>
+      </ul>
+
+      <div class="blog-rule"></div>
+
+      <h2 id="memory">The memory problem</h2>
+      <p>A 50MB PDF doesn't require 50MB of RAM to process — it requires 200–400MB. The expansion factor is real. When PDF.js renders a page to a Canvas element, it allocates <code>width × height × 4 bytes</code> (RGBA pixels). A Letter-size page at 300 DPI is 2550 × 3300 pixels — roughly 32MB per page. At 600 DPI: 134MB per page.</p>
+
+      <h3>Problem 1 — Canvas memory isn't just RAM</h3>
+      <p>Each canvas element allocates GPU texture memory in addition to system RAM. A 4000×6000 canvas uses 96MB RAM <em>plus</em> 96MB VRAM. On mobile with shared memory, that's 192MB gone per page. Without explicit cleanup: 100 pages × 96MB = 9.6GB accumulated.</p>
+      <pre><code>// This is not enough — GC may not run for seconds
+canvas = null;
+
+// This is what actually releases GPU memory immediately
+canvas.width = 0;
+canvas.height = 0;
+canvas = null;</code></pre>
+      <p>Setting dimensions to zero tells the browser to release the GPU resource immediately, not wait for garbage collection.</p>
+
+      <h3>Problem 2 — JavaScript's GC is lazy</h3>
+      <p>The GC won't free memory until pressure is high. Processing 100+ pages simultaneously would crash any browser. The solution is deliberate batching with explicit GC pauses:</p>
+      <pre><code>const processBatches = async (allPages, batchSize) => {
+  for (let b = 0; b &lt; batches.length; b++) {
+    for (const page of batches[b]) {
+      const canvas = await renderPage(page);
+      await downloadImage(canvas);
+      canvas.width = canvas.height = 0; // free immediately
+    }
+    // 2-second pause — Chrome GC triggers after ~1–1.5s idle
+    await new Promise(r => setTimeout(r, 2000));
+    if (window.gc) window.gc(); // hint, not guarantee
+  }
+};</code></pre>
+      <p>The 2-second delay is deliberate. Chrome's GC heuristics trigger after ~1–1.5 seconds of idle. Without this pause, memory accumulates until the tab crashes.</p>
+
+      <div class="blog-rule"></div>
+
+      <h2 id="device">Device-adaptive processing</h2>
+      <p>The same codebase runs on a 2GB RAM phone and a 32GB workstation. The approach: scale quality down gracefully, never block features entirely.</p>
+      <pre><code>const getDeviceCapabilities = () => {
+  const isMobile = /Android|iPhone/i.test(navigator.userAgent);
+  const deviceMemory = navigator.deviceMemory || 4; // not in Safari
+
+  if (isMobile && screen.width &lt; 768)
+    return { maxFileSize: 50 * 1024 * 1024, maxDPI: 300, maxPagesPerBatch: 10 };
+  if (deviceMemory &lt; 4)
+    return { maxFileSize: 100 * 1024 * 1024, maxDPI: 450, maxPagesPerBatch: 30 };
+  return   { maxFileSize: 150 * 1024 * 1024, maxDPI: 600, maxPagesPerBatch: 50 };
+};</code></pre>
+      <p>Memory scales quadratically with render scale — 2× scale = 4× memory. Estimation runs before every heavy operation:</p>
+      <pre><code>const estimateMemoryUsage = (pageCount, scale, format) => {
+  const basePerPage   = 5 * 1024 * 1024;      // ~5MB at scale 1.0
+  const scaleFactor   = Math.pow(scale, 2);    // quadratic growth
+  const fmtMultiplier = format === 'png' ? 1.5 : 1.0;
+  return pageCount * basePerPage * scaleFactor * fmtMultiplier * 1.5; // 50% safety margin
+};</code></pre>
+      <p>If the estimate exceeds 50% of available device memory, the user is warned before processing begins — not surprised by a crash mid-operation.</p>
+
+      <div class="blog-rule"></div>
+
+      <h2 id="storage">Three-tier storage architecture</h2>
+      <ul>
+        <li><strong>RAM</strong> — active PDFs and processing buffers. Completely volatile. Close the tab: gone. Zero persistence.</li>
+        <li><strong>IndexedDB</strong> — large binary file buffers. localStorage has a 5–10MB limit and stores data as strings, doubling memory cost. IndexedDB stores binary data natively, handles gigabytes.</li>
+        <li><strong>localStorage</strong> — metadata only (filenames, timestamps, sizes). Never file content. Used exclusively for the "Recent Files" list.</li>
+      </ul>
+      <div class="arch-flow">
+        <span class="hi">Your file</span> → FileReader API → ArrayBuffer in browser RAM<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ WebAssembly (pdf-lib / Ghostscript / Tesseract)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Processed bytes in browser RAM<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ Blob URL → downloads to your device<br>
+        <br>
+        <span class="lo">Network requests containing your file data: 0</span>
+      </div>
+
+      <div class="blog-rule"></div>
+
+      <h2 id="safari">Safari download compatibility</h2>
+      <p>Safari's security model blocks programmatic downloads to prevent drive-by attacks. The HTML5 <code>download</code> attribute works on desktop but fails silently on iOS. Three-method fallback chain:</p>
+      <pre><code>const safariCompatibleDownload = (data, filename, mimeType) => {
+  // Method 1: download.js library
+  if (typeof window.download === 'function') {
+    window.download(data, filename, mimeType); return;
+  }
+  // Method 2: HTML5 anchor element
+  try {
+    const blob = new Blob([data], { type: mimeType });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), {
+      href: url, download: filename, style: 'display:none'
+    });
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url); // critical — prevents memory leak
+    }, 1000);
+    return;
+  } catch (e) {}
+  // Method 3: window.open() — triggers iOS share sheet
+  window.open(URL.createObjectURL(new Blob([data], { type: mimeType })), '_blank');
+};</code></pre>
+      <p><code>URL.revokeObjectURL</code> is not optional. Object URLs keep a Blob reference alive until explicitly revoked — for a 50MB PDF, forgetting it means 50MB RAM held for the lifetime of the tab.</p>
+
+      <div class="blog-rule"></div>
+
+      <h2 id="ai">AI Chat — the privacy architecture</h2>
+      <p>The Chat with PDF feature uses Google's Gemini 2.5 Flash API. The critical design decision: the PDF binary never leaves the device. Only extracted text is transmitted.</p>
+      <pre><code>// Step 1: extract text locally with PDF.js
+const extractText = async (file) => {
+  const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+  let text = '';
+  for (let i = 1; i &lt;= pdf.numPages; i++) {
+    const content = await (await pdf.getPage(i)).getTextContent();
+    text += `\n\n--- Page ${i} ---\n${content.items.map(x => x.str).join(' ')}`;
+  }
+  return text;
+};
+
+// Step 2: stream from Gemini — only text goes to the API
+const res = await fetch(
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?key=${key}&alt=sse`,
+  { method: 'POST', body: JSON.stringify({
+    contents: [{ parts: [{ text: `Document:\n${extractedText}\n\nQ: ${query}` }] }]
+  })}
+);</code></pre>
+      <p>Why Gemini 2.5 Flash: handles 100-page PDFs (~50,000 tokens) in under 3 seconds, costs ~1/10th of GPT-4, supports streaming. The free tier covers everyday personal use.</p>
+
+      <div class="blog-rule"></div>
+
+      <h2 id="offline">Offline-first with service workers</h2>
+      <p>After the first page load, every tool works without internet. WASM libraries are cached via service worker — loading in ~20ms vs 500ms+ from CDN.</p>
+      <pre><code>self.addEventListener('install', (e) => {
+  e.waitUntil(
+    caches.open('ihatepdf-v1').then((cache) => cache.addAll([
+      '/',
+      'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+    ]))
+  );
+});
+
+self.addEventListener('fetch', (e) =>
+  e.respondWith(caches.match(e.request).then(c => c || fetch(e.request)))
+);</code></pre>
+      <p><strong>Test it yourself:</strong> DevTools → Application → Service Workers → check "Offline" → reload → every tool still works.</p>
+
+      <div class="blog-rule"></div>
+
+      <h2 id="philosophy">The engineering philosophy</h2>
+      <ul>
+        <li><strong>Privacy as architecture, not policy.</strong> "We delete your files after 1 hour" requires trusting an organization. "We never receive your files" requires trusting a technical constraint you can verify yourself — open DevTools, watch the Network tab, merge a PDF. Upload column: zero.</li>
+        <li><strong>Device respect.</strong> A tool that crashes phones is not a free tool — it's a tool for people with expensive hardware. Adaptive processing ensures every operation works on the device the user actually has.</li>
+        <li><strong>No infrastructure, no limits.</strong> Server-based tools limit file sizes and task counts because infrastructure costs money. When processing happens on your device, those constraints disappear. The only limit is your device memory — which is the honest limit.</li>
+      </ul>
+
+    </article>
+
+    <div class="related-tools">
+      <div class="rt-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        Try these tools
+      </div>
+      <div class="rt-grid">
+        <a href="https://www.ihatepdf.cv/merge-pdf" class="rt-chip">Merge PDFs →</a>
+        <a href="https://www.ihatepdf.cv/compress-pdf" class="rt-chip">Compress PDF →</a>
+        <a href="https://www.ihatepdf.cv/ocr-pdf" class="rt-chip">OCR PDF →</a>
+        <a href="https://www.ihatepdf.cv/encrypt-pdf" class="rt-chip">Encrypt PDF →</a>
+        <a href="https://www.ihatepdf.cv/chat-with-pdf" class="rt-chip">Chat with PDF →</a>
+      </div>
+    </div>
+
+    <div class="cta-block">
+      <div class="cta-eyebrow">ihatepdf.cv</div>
+      <h2 class="cta-heading">Verify it yourself</h2>
+      <p class="cta-sub">Open DevTools → Network → merge two PDFs → watch upload column stay at zero.</p>
+      <a href="https://www.ihatepdf.cv" class="cta-btn">Open ihatepdf.cv →</a>
+    </div>
+
+    <div class="related-posts">
+      <h3 class="rp-heading">More posts</h3>
+      <div class="rp-grid">
+        <a href="comparison.html" class="rp-card">
+          <p class="rp-title">ihatepdf.cv vs iLovePDF vs Smallpdf vs Adobe</p>
+          <p class="rp-desc">Honest comparison — privacy, watermarks, limits, offline use.</p>
+          <span class="rp-link">Read →</span>
+        </a>
+        <a href="merge-pdf-deep-dive.html" class="rp-card">
+          <p class="rp-title">Building a PDF Merger in the Browser</p>
+          <p class="rp-desc">pdf-lib, drag-and-drop state, Safari fallbacks, 20-line core.</p>
+          <span class="rp-link">Read →</span>
+        </a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<footer>
+  <div class="post-footer">
+    <a href="index.html" class="footer-back">← All posts</a>
+    <a href="https://www.ihatepdf.cv" class="footer-tools">All PDF tools</a>
+  </div>
+</footer>
+
+<script>
+  var bar = document.getElementById('scroll-bar');
+  window.addEventListener('scroll', function() {
+    var t = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = t > 0 ? (window.scrollY / t * 100) + '%' : '0%';
+  }, { passive: true });
+
+  var tocList = document.getElementById('toc-list');
+  if (tocList) {
+    document.querySelectorAll('#post-body h2').forEach(function(h) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = '#' + h.id; a.className = 'toc-link'; a.textContent = h.textContent;
+      li.appendChild(a); tocList.appendChild(li);
+    });
+    var links = tocList.querySelectorAll('.toc-link');
+    new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          links.forEach(function(l) { l.classList.remove('active'); });
+          var a = tocList.querySelector('[href="#' + e.target.id + '"]');
+          if (a) a.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' }).observe
+    && document.querySelectorAll('#post-body h2').forEach(function(h) {
+      new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+          if (e.isIntersecting) {
+            links.forEach(function(l) { l.classList.remove('active'); });
+            var a = tocList.querySelector('[href="#' + e.target.id + '"]');
+            if (a) a.classList.add('active');
+          }
+        });
+      }, { rootMargin: '-20% 0px -70% 0px' }).observe(h);
+    });
+  }
+</script>
+</body>
+</html>
