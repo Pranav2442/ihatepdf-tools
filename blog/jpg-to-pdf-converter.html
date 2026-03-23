@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>I Stopped Emailing Myself Photos — Here's the Tool That Fixed Everything | ihatepdf.cv</title>
+  <meta name="description" content="How a free, privacy-first browser tool quietly became my go-to for converting images to PDF. Everything happens in your browser — your files never leave your device.">
+  <link rel="canonical" href="https://www.ihatepdf.cv/blog/jpg-to-pdf-converter">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="I Stopped Emailing Myself Photos — ihatepdf.cv">
+  <meta property="og:description" content="How a free, privacy-first browser tool quietly became my go-to for converting images to PDF.">
+  <meta property="og:url" content="https://www.ihatepdf.cv/blog/jpg-to-pdf-converter">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">{
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "I Stopped Emailing Myself Photos — Here's the Tool That Fixed Everything",
+    "description": "How a free, privacy-first browser tool quietly became my go-to for converting images to PDF.",
+    "url": "https://www.ihatepdf.cv/blog/jpg-to-pdf-converter",
+    "publisher": { "@type": "Organization", "name": "ihatepdf.cv", "url": "https://www.ihatepdf.cv" },
+    "datePublished": "2026-03-23"
+  }</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 16px; }
+    body {
+      background: #0d0d0d; color: #b0b0b0;
+      font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+      font-weight: 300; line-height: 1.8;
+      -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    }
+    ::selection { background: #222; color: #fff; }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: #131313; }
+    ::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
+    a { text-decoration: none; }
+
+    /* ── Scroll bar ── */
+    #scroll-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0%; background: linear-gradient(90deg, #333, #777); z-index: 200; transition: width 0.1s linear; }
+
+    /* ── Nav ── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,13,13,0.94); backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      height: 56px; display: flex; align-items: center;
+      justify-content: space-between; padding: 0 28px;
+    }
+    .nav-brand { font-family: 'Fraunces', Georgia, serif; font-size: 1.05rem; font-weight: 600; color: #e8e8e8; letter-spacing: -0.02em; }
+    .nav-brand span { color: #777777; font-style: italic; }
+    .nav-links { display: flex; align-items: center; gap: 20px; }
+    .nav-link { font-size: 0.72rem; font-family: 'DM Mono', monospace; color: #666666; text-transform: uppercase; letter-spacing: 0.06em; transition: color 0.2s; }
+    .nav-link:hover { color: #a8a8a8; }
+    .nav-link.active { color: #888888; }
+    .nav-cta { font-size: 0.75rem; color: #b0b0b0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 6px 14px; font-weight: 500; transition: all 0.2s; }
+    .nav-cta:hover { color: #fff; background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.15); }
+
+    /* ── Layout ── */
+    .wrapper { max-width: 900px; margin: 0 auto; padding: 0 32px; }
+
+    /* ── Post header ── */
+    .post-header {
+      padding: 72px 0 56px;
+      position: relative;
+    }
+    .post-header::before {
+      content: ''; position: absolute; top: 0; left: 0;
+      width: 1px; height: 72px;
+      background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.06));
+    }
+
+    .breadcrumb {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 28px;
+    }
+    .breadcrumb a, .breadcrumb span {
+      font-size: 0.68rem; font-family: 'DM Mono', monospace;
+      color: #444444; text-transform: uppercase; letter-spacing: 0.1em;
+      transition: color 0.2s;
+    }
+    .breadcrumb a:hover { color: #888888; }
+    .breadcrumb .sep { color: #2a2a2a; }
+
+    .post-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; }
+    .meta-tag {
+      font-size: 0.62rem; font-family: 'DM Mono', monospace; color: #505050;
+      background: rgba(255,255,255,0.07); border: 1px solid #2a2a2a;
+      border-radius: 3px; padding: 2px 8px;
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+    .meta-date { font-size: 0.68rem; font-family: 'DM Mono', monospace; color: #4a4a4a; }
+    .meta-read { font-size: 0.68rem; font-family: 'DM Mono', monospace; color: #444444; }
+
+    .post-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700; color: #e8e8e8;
+      letter-spacing: -0.03em; line-height: 1.08; margin-bottom: 18px;
+    }
+
+    .post-subtitle {
+      font-size: 1rem; color: #777777; max-width: 600px;
+      line-height: 1.7; font-weight: 300; font-style: italic;
+    }
+
+    .post-divider {
+      height: 1px; margin: 40px 0;
+      background: linear-gradient(90deg, transparent, #2a2a2a 20%, #2a2a2a 80%, transparent);
+    }
+
+    /* ── Article body ── */
+    .article-grid {
+      display: grid;
+      grid-template-columns: 1fr 200px;
+      gap: 64px;
+      padding-bottom: 100px;
+      align-items: start;
+    }
+
+    @media (max-width: 720px) {
+      .article-grid { grid-template-columns: 1fr; gap: 0; }
+      .article-sidebar { display: none; }
+    }
+
+    .article-body { min-width: 0; }
+
+    .article-body p {
+      font-size: 0.97rem; color: #888888;
+      line-height: 1.85; margin-bottom: 1.5em; font-weight: 300;
+    }
+
+    .article-body em { color: #666666; font-style: italic; }
+
+    .article-body strong { color: #b0b0b0; font-weight: 500; }
+
+    .article-body a {
+      color: #999999;
+      border-bottom: 1px solid #2a2a2a;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .article-body a:hover { color: #cccccc; border-color: #555555; }
+
+    /* ── Section headings ── */
+    .article-body h2 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(1.25rem, 2.5vw, 1.7rem);
+      font-weight: 700; color: #d4d4d4;
+      letter-spacing: -0.02em; line-height: 1.2;
+      margin: 56px 0 18px;
+    }
+
+    .article-body h2 em { font-style: italic; color: #666666; }
+
+    /* ── Section label (eyebrow above h2) ── */
+    .section-eye {
+      font-size: 0.62rem; font-family: 'DM Mono', monospace;
+      color: #444444; text-transform: uppercase; letter-spacing: 0.14em;
+      margin-bottom: 10px; margin-top: 56px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-eye::before { content: ''; display: block; width: 16px; height: 1px; background: #2a2a2a; }
+
+    /* ── Privacy callout ── */
+    .callout {
+      background: #111111; border: 1px solid #2a2a2a;
+      border-left: 2px solid #444444; border-radius: 10px;
+      padding: 22px 26px; margin: 28px 0;
+    }
+    .callout-label {
+      font-size: 0.62rem; font-family: 'DM Mono', monospace;
+      color: #444444; text-transform: uppercase; letter-spacing: 0.12em;
+      margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+    }
+    .callout-label::before {
+      content: ''; width: 5px; height: 5px;
+      border-radius: 50%; background: #555555; flex-shrink: 0;
+    }
+    .callout p { font-size: 0.9rem; color: #777777; margin: 0 !important; line-height: 1.7; }
+    .callout strong { color: #b0b0b0; }
+
+    /* ── Privacy guarantee block ── */
+    .arch-block {
+      background: #131313; border: 1px solid #2a2a2a; border-radius: 10px;
+      padding: 24px 28px; margin: 28px 0;
+    }
+    .arch-label {
+      font-size: 0.62rem; font-family: 'DM Mono', monospace;
+      color: #444444; text-transform: uppercase; letter-spacing: 0.12em;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+    .arch-label svg { opacity: 0.5; flex-shrink: 0; }
+    .not-list { list-style: none; display: grid; gap: 10px; }
+    .not-list li {
+      font-family: 'DM Mono', monospace; font-size: 0.75rem;
+      color: #555555; display: flex; align-items: flex-start;
+      gap: 12px; line-height: 1.5;
+    }
+    .not-list li::before { content: '✕'; color: #3a3a3a; flex-shrink: 0; }
+
+    /* ── Steps ── */
+    .steps { display: grid; gap: 8px; margin: 24px 0; }
+    .step {
+      display: flex; gap: 16px; align-items: flex-start;
+      background: rgba(255,255,255,0.03); border: 1px solid #1e1e1e;
+      border-radius: 8px; padding: 14px 18px; transition: border-color 0.2s;
+    }
+    .step:hover { border-color: #2a2a2a; }
+    .step-num {
+      font-family: 'DM Mono', monospace; font-size: 0.65rem; font-weight: 400;
+      color: #444444; background: #131313; border: 1px solid #2a2a2a;
+      border-radius: 4px; width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px; letter-spacing: 0.04em;
+    }
+    .step-body { font-size: 0.875rem; color: #777777; line-height: 1.65; }
+    .step-body strong { color: #a8a8a8; font-weight: 500; }
+    .step-body a { color: #888888; border-bottom: 1px solid #2a2a2a; }
+
+    /* ── Feature grid ── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 8px; margin: 24px 0;
+    }
+    .feature-item {
+      background: rgba(255,255,255,0.03); border: 1px solid #1e1e1e;
+      border-radius: 8px; padding: 16px 18px; transition: all 0.2s;
+    }
+    .feature-item:hover { background: rgba(255,255,255,0.06); border-color: #2a2a2a; }
+    .feature-title {
+      font-size: 0.8rem; font-weight: 500; color: #a8a8a8;
+      margin-bottom: 5px; font-family: 'DM Sans', sans-serif;
+    }
+    .feature-desc { font-size: 0.78rem; color: #4a4a4a; line-height: 1.6; margin: 0 !important; font-weight: 300; }
+
+    /* ── Use cases ── */
+    .usecase-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 8px; margin: 24px 0;
+    }
+    .usecase {
+      background: rgba(255,255,255,0.03); border: 1px solid #1e1e1e;
+      border-radius: 8px; padding: 14px 16px;
+    }
+    .usecase-title {
+      font-size: 0.72rem; font-family: 'DM Mono', monospace;
+      color: #666666; text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 6px;
+    }
+    .usecase p { font-size: 0.8rem; color: #4a4a4a; line-height: 1.6; margin: 0 !important; font-weight: 300; }
+    .usecase p a { color: #555555; border-bottom: 1px solid #2a2a2a; }
+
+    /* ── Tips ── */
+    .tips {
+      background: #111111; border: 1px solid #222;
+      border-radius: 10px; padding: 22px 26px; margin: 28px 0;
+    }
+    .tips-header {
+      font-size: 0.62rem; font-family: 'DM Mono', monospace;
+      color: #444444; text-transform: uppercase; letter-spacing: 0.12em;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+    .tip { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #1a1a1a; }
+    .tip:last-child { border-bottom: none; padding-bottom: 0; }
+    .tip:first-of-type { padding-top: 0; }
+    .tip-arrow { font-family: 'DM Mono', monospace; color: #333333; flex-shrink: 0; font-size: 12px; margin-top: 3px; }
+    .tip p { font-size: 0.84rem; color: #666666; line-height: 1.6; margin: 0 !important; font-weight: 300; }
+    .tip p strong { color: #999999; font-weight: 500; }
+    .tip p a { color: #666666; border-bottom: 1px solid #2a2a2a; }
+    code {
+      font-family: 'DM Mono', monospace; font-size: 0.78rem;
+      background: #1a1a1a; border: 1px solid #2a2a2a;
+      border-radius: 3px; padding: 1px 6px; color: #888888;
+    }
+
+    /* ── Philosophy pull ── */
+    .philosophy {
+      border-top: 1px solid #1e1e1e;
+      border-bottom: 1px solid #1e1e1e;
+      padding: 32px 0; margin: 48px 0;
+    }
+    .philosophy p {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      font-style: italic; color: #666666; line-height: 1.7;
+      margin-bottom: 1em !important;
+    }
+    .philosophy p:last-child { margin-bottom: 0 !important; }
+    .philosophy strong { color: #999999; font-style: normal; font-weight: 600; }
+    .philosophy a { color: #888888; border-bottom: 1px solid #2a2a2a; }
+
+    /* ── CTA block ── */
+    .cta-block {
+      background: rgba(255,255,255,0.03); border: 1px solid #252525;
+      border-radius: 14px; padding: 40px; margin-top: 56px; text-align: center;
+    }
+    .cta-eyebrow {
+      font-size: 0.65rem; font-family: 'DM Mono', monospace;
+      color: #444444; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 16px;
+    }
+    .cta-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 700; color: #d4d4d4;
+      letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 12px;
+    }
+    .cta-title em { font-style: italic; color: #555555; }
+    .cta-sub { font-size: 0.88rem; color: #666666; margin-bottom: 28px; max-width: 420px; margin-left: auto; margin-right: auto; line-height: 1.65; font-weight: 300; }
+    .cta-btn {
+      display: inline-block; padding: 12px 30px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px; color: #d4d4d4; font-size: 0.875rem; font-weight: 500;
+      transition: all 0.25s;
+    }
+    .cta-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.22); color: #fff; transform: translateY(-1px); border-bottom: 1px solid rgba(255,255,255,0.22); }
+    .cta-note { margin-top: 14px; font-size: 0.68rem; font-family: 'DM Mono', monospace; color: #3a3a3a; text-transform: uppercase; letter-spacing: 0.1em; }
+
+    /* ── Sidebar ── */
+    .article-sidebar { position: sticky; top: 76px; }
+    .sidebar-section { margin-bottom: 32px; }
+    .sidebar-label {
+      font-size: 0.6rem; font-family: 'DM Mono', monospace;
+      color: #3a3a3a; text-transform: uppercase; letter-spacing: 0.14em;
+      margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #1e1e1e;
+    }
+    .sidebar-toc { list-style: none; display: grid; gap: 6px; }
+    .sidebar-toc li a {
+      font-size: 0.72rem; color: #444444; line-height: 1.4;
+      transition: color 0.2s; border-bottom: none;
+    }
+    .sidebar-toc li a:hover { color: #888888; }
+    .sidebar-tool {
+      display: block; padding: 12px 14px;
+      background: rgba(255,255,255,0.03); border: 1px solid #1e1e1e;
+      border-radius: 8px; transition: all 0.2s;
+    }
+    .sidebar-tool:hover { background: rgba(255,255,255,0.06); border-color: #2a2a2a; }
+    .sidebar-tool-name { font-size: 0.78rem; font-weight: 500; color: #a8a8a8; margin-bottom: 2px; }
+    .sidebar-tool-desc { font-size: 0.7rem; color: #3a3a3a; line-height: 1.4; font-weight: 300; }
+
+    /* ── Footer ── */
+    .page-footer { border-top: 1px solid #1e1e1e; padding: 28px 32px; max-width: 900px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .footer-brand { font-family: 'Fraunces', Georgia, serif; font-size: 0.95rem; color: #4a4a4a; letter-spacing: -0.01em; }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+    .footer-link { font-size: 0.7rem; font-family: 'DM Mono', monospace; color: #444444; text-transform: uppercase; letter-spacing: 0.06em; transition: color 0.2s; }
+    .footer-link:hover { color: #888888; }
+
+    /* ── Animations ── */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .post-header { animation: fadeUp 0.5s ease both; }
+    .article-grid { animation: fadeUp 0.5s 0.08s ease both; }
+
+    @media (max-width: 640px) {
+      .wrapper { padding: 0 20px; }
+      .post-header { padding: 48px 0 40px; }
+      .cta-block { padding: 28px 20px; }
+      .nav-links .nav-link { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="scroll-bar"></div>
+
+<!-- ── Nav ── -->
+<nav class="nav">
+  <a href="https://www.ihatepdf.cv" class="nav-brand">ihatepdf<span>.</span>cv</a>
+  <div class="nav-links">
+    <a href="../index.html" class="nav-link">Tools</a>
+    <a href="index.html" class="nav-link active">Blog</a>
+    <a href="https://www.ihatepdf.cv/images-to-pdf" class="nav-cta">Try the tool →</a>
+  </div>
+</nav>
+
+<!-- ── Post header ── -->
+<div class="wrapper">
+  <header class="post-header">
+    <div class="breadcrumb">
+      <a href="../index.html">Home</a>
+      <span class="sep">/</span>
+      <a href="index.html">Blog</a>
+      <span class="sep">/</span>
+      <span>JPG to PDF</span>
+    </div>
+    <div class="post-meta">
+      <span class="meta-tag">Tools</span>
+      <span class="meta-tag">Privacy</span>
+      <span class="meta-date">Mar 2026</span>
+      <span class="meta-read">6 min read</span>
+    </div>
+    <h1 class="post-title">I Stopped Emailing<br>Myself Photos —<br>Here's the Tool<br>That Fixed Everything</h1>
+    <p class="post-subtitle">How a free, privacy-first browser tool quietly became my go-to for converting images to PDF.</p>
+    <div class="post-divider"></div>
+  </header>
+
+  <!-- ── Article grid ── -->
+  <div class="article-grid">
+
+    <!-- Body -->
+    <article class="article-body">
+
+      <p>There's a ritual most of us have performed at least once: taking a dozen photos of something — receipts, a whiteboard, handwritten notes, a product — and then spending the next ten minutes trying to figure out how to send them as one clean file.</p>
+
+      <p>You zip them. The recipient can't open the zip. You try Google Drive. They don't have a Google account. You send them one by one. They get confused about the order.</p>
+
+      <p>Eventually, someone says: <em>"Can you just send it as a PDF?"</em></p>
+
+      <p>Yes. Obviously. But converting images to PDF has, somehow, always been more painful than it should be. Until I found <strong><a href="https://ihatepdf.cv">ihatepdf.cv</a></strong>.</p>
+
+      <div class="section-eye">What is it</div>
+      <h2>What Is <em>ihatepdf.cv?</em></h2>
+
+      <p><a href="https://ihatepdf.cv">ihatepdf.cv</a> is a free, browser-based PDF toolkit — and the name tells you everything about the spirit of the product. It was clearly built by someone who has dealt with one too many bloated, subscription-gated, ad-riddled PDF tools and decided to do something about it.</p>
+
+      <p>The platform offers a suite of PDF utilities, but the one that's earned a permanent tab in my browser is the <strong>JPG to PDF converter</strong> at <a href="https://ihatepdf.cv/images-to-pdf">ihatepdf.cv/images-to-pdf</a>.</p>
+
+      <div class="section-eye">Privacy</div>
+      <h2>Your Files <em>Never Leave</em> Your Device</h2>
+
+      <p>Most online file converters have a quiet business model: you upload your files, they process them on their servers, and somewhere in the fine print it says they might retain your data for "service improvement."</p>
+
+      <p>ihatepdf.cv takes a fundamentally different stance — and they're upfront about it.</p>
+
+      <div class="callout">
+        <div class="callout-label">Core Principle</div>
+        <p><strong>Everything happens in the browser. Your files, your control.</strong> The image-to-PDF conversion runs entirely inside your browser tab. Nothing is uploaded. Nothing is transmitted. No file ever touches an external server.</p>
+      </div>
+
+      <p>What looks like a web service is actually a local application that just happens to live in your browser tab — powered by PDF-lib, a JavaScript library that executes entirely on your own machine. This isn't a small footnote in a privacy policy — it's the core design decision behind the entire platform.</p>
+
+      <p><a href="https://ihatepdf.cv">ihatepdf.cv</a> was built on the principle that your files belong to you, and <strong>respecting your privacy means making it technically impossible</strong> for your documents to be stored, analyzed, or shared without your knowledge.</p>
+
+      <div class="arch-block">
+        <div class="arch-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          What does NOT happen when you use ihatepdf.cv
+        </div>
+        <ul class="not-list">
+          <li>Your file is not uploaded to any server</li>
+          <li>No third party ever receives or processes your document</li>
+          <li>Nothing is retained after you close the tab</li>
+          <li>No accounts, no session tokens, no tracking of what you converted</li>
+        </ul>
+      </div>
+
+      <p>The result is a tool you can use with complete confidence — whether you're converting a personal photo, a financial document, a medical record, or sensitive client work. The conversion happens in your browser, your files stay on your device, and that's where it ends. <strong>Not a promise. An architectural guarantee.</strong></p>
+
+      <div class="section-eye">How to use it</div>
+      <h2>Using It Is <em>Embarrassingly Simple</em></h2>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-body"><strong>Go to <a href="https://ihatepdf.cv/images-to-pdf">ihatepdf.cv/images-to-pdf</a></strong> — click Choose Files or drag and drop images directly into the upload zone.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-body"><strong>Review thumbnails.</strong> Your images appear as numbered previews. Remove any you don't want. The numbers show the page order in the final PDF.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-body"><strong>Click Convert to PDF.</strong> A spinner appears for a second or two while your browser does all the work locally — nothing leaves your machine.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div class="step-body"><strong>Your PDF downloads automatically.</strong> No account creation. No email verification. No watermarks. No "upgrade to Pro to download."</div>
+        </div>
+      </div>
+
+      <div class="section-eye">Capabilities</div>
+      <h2>What It <em>Handles Well</em></h2>
+
+      <div class="feature-grid">
+        <div class="feature-item">
+          <div class="feature-title">JPG + PNG Support</div>
+          <p class="feature-desc">The two formats covering ~95% of real-world use cases. Camera photos and screenshots handled natively.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-title">Batch Conversion</div>
+          <p class="feature-desc">Upload as many images as you want. They stitch into one PDF in the order you uploaded them.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-title">Original Quality</div>
+          <p class="feature-desc">Images embedded at source resolution. No recompression. No quality loss. Pixel for pixel.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-title">Works Offline</div>
+          <p class="feature-desc">After the initial page load, the converter works without an internet connection. All processing is local.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-title">Mobile Friendly</div>
+          <p class="feature-desc">Responsive with explicit iOS Safari support for reliable file downloads on mobile.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-title">Zero Friction</div>
+          <p class="feature-desc">No account. No email. No watermarks. No paywalls. The whole thing takes under 30 seconds.</p>
+        </div>
+      </div>
+
+      <div class="section-eye">Real-world use</div>
+      <h2>Use Cases That Make <em>This Indispensable</em></h2>
+
+      <div class="usecase-grid">
+        <div class="usecase">
+          <div class="usecase-title">Expense Reports</div>
+          <p>Snap photos of receipts all week, dump them into <a href="https://ihatepdf.cv/images-to-pdf">ihatepdf.cv</a> on Friday. One PDF, done.</p>
+        </div>
+        <div class="usecase">
+          <div class="usecase-title">Scanned Documents</div>
+          <p>Using your phone as a scanner? Turn that folder of JPGs into a proper document in seconds.</p>
+        </div>
+        <div class="usecase">
+          <div class="usecase-title">Client Deliverables</div>
+          <p>A PDF looks more intentional than a ZIP of images and opens cleanly on every device.</p>
+        </div>
+        <div class="usecase">
+          <div class="usecase-title">Portfolios</div>
+          <p>Compile work samples into a single shareable document — no InDesign or Canva needed.</p>
+        </div>
+        <div class="usecase">
+          <div class="usecase-title">Archiving Paperwork</div>
+          <p>PDFs are far more reliably searchable and organized than a pile of JPGs in a folder.</p>
+        </div>
+        <div class="usecase">
+          <div class="usecase-title">Design Mockups</div>
+          <p>Share wireframes or concept art as PDFs with clients or dev teams without friction.</p>
+        </div>
+      </div>
+
+      <div class="section-eye">Tips</div>
+      <h2>A Few <em>Practical Tips</em></h2>
+
+      <div class="tips">
+        <div class="tips-header">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Pro tips
+        </div>
+        <div class="tip">
+          <span class="tip-arrow">→</span>
+          <p><strong>Name files sequentially before uploading.</strong> <code>001_</code>, <code>002_</code>, <code>003_</code> ensures correct page order in the final PDF.</p>
+        </div>
+        <div class="tip">
+          <span class="tip-arrow">→</span>
+          <p><strong>Resize very large images first.</strong> Since processing is in-browser, images above 20MB can slow things down. A quick resize keeps it snappy.</p>
+        </div>
+        <div class="tip">
+          <span class="tip-arrow">→</span>
+          <p><strong>Combine with other ihatepdf.cv tools.</strong> Too large to email? Use the <a href="https://ihatepdf.cv/compress-pdf">compress tool</a>. Need page numbers? That's on the same platform too.</p>
+        </div>
+      </div>
+
+      <div class="section-eye">Philosophy</div>
+      <h2>Why This <em>Approach Matters</em></h2>
+
+      <div class="philosophy">
+        <p>Most consumer software has drifted toward extracting as much value from users as possible: subscriptions for basic features, dark patterns that obscure free tiers, <strong>data collection baked into every interaction</strong>.</p>
+        <p><a href="https://ihatepdf.cv">ihatepdf.cv</a> is a quiet counterexample. <strong>It's free. It's private by design.</strong> It doesn't require an account. It doesn't ask for anything in return. The tool exists to solve a specific problem as efficiently as possible — and then it gets out of your way.</p>
+        <p>That's rare. It's worth pointing at when you find it.</p>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-block">
+        <div class="cta-eyebrow">ihatepdf.cv / images-to-pdf</div>
+        <h2 class="cta-title">Try it free —<br><em>no catch</em></h2>
+        <p class="cta-sub">Fast, free, and private by architecture. Your files never leave your device. Works offline after first load.</p>
+        <a href="https://ihatepdf.cv/images-to-pdf" class="cta-btn">Open ihatepdf.cv/images-to-pdf →</a>
+        <p class="cta-note">No sign-up · No upload · No watermark</p>
+      </div>
+
+    </article>
+
+    <!-- Sidebar -->
+    <aside class="article-sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Contents</div>
+        <ul class="sidebar-toc">
+          <li><a href="#what-is">What is ihatepdf.cv</a></li>
+          <li><a href="#privacy">Your files never leave</a></li>
+          <li><a href="#how-to">How to use it</a></li>
+          <li><a href="#features">What it handles</a></li>
+          <li><a href="#use-cases">Use cases</a></li>
+          <li><a href="#tips">Practical tips</a></li>
+          <li><a href="#why">Why it matters</a></li>
+        </ul>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Try the tool</div>
+        <a href="https://ihatepdf.cv/images-to-pdf" class="sidebar-tool">
+          <div class="sidebar-tool-name">Images to PDF →</div>
+          <div class="sidebar-tool-desc">JPG, PNG batch convert. No upload.</div>
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Related posts</div>
+        <a href="how-it-works.html" class="sidebar-tool" style="margin-bottom:6px;display:block;">
+          <div class="sidebar-tool-name">How it works →</div>
+          <div class="sidebar-tool-desc">Client-side PDF engine deep-dive</div>
+        </a>
+        <a href="comparison.html" class="sidebar-tool" style="display:block;">
+          <div class="sidebar-tool-name">Comparison →</div>
+          <div class="sidebar-tool-desc">vs iLovePDF, Smallpdf, Adobe</div>
+        </a>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="page-footer">
+    <span class="footer-brand">ihatepdf<span style="color:#555555;font-style:italic;">.</span>cv</span>
+    <div class="footer-links">
+      <a href="index.html" class="footer-link">Blog</a>
+      <a href="how-it-works.html" class="footer-link">How it works</a>
+      <a href="comparison.html" class="footer-link">Comparison</a>
+      <a href="https://www.ihatepdf.cv" class="footer-link">Open app</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  var bar = document.getElementById('scroll-bar');
+  window.addEventListener('scroll', function() {
+    var t = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = t > 0 ? (window.scrollY / t * 100) + '%' : '0%';
+  }, { passive: true });
+</script>
+</body>
+</html>
