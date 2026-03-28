@@ -11,235 +11,523 @@
   <meta property="og:description" content="Engineering deep-dives and PDF guides from ihatepdf.cv.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,200;1,9..144,400;1,9..144,600&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { font-size: 16px; }
-    body {
-      background: #0d0d0d; color: #b0b0b0;
-      font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
-      font-weight: 300; line-height: 1.8;
-      -webkit-font-smoothing: antialiased; overflow-x: hidden; min-height: 100vh;
-    }
-    ::selection { background: #4a4a4a; color: #fff; }
-    ::-webkit-scrollbar { width: 3px; }
-    ::-webkit-scrollbar-track { background: #131313; }
-    ::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
-    a { text-decoration: none; }
+    html { font-size: 16px; scroll-behavior: smooth; }
 
-    /* Nav */
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface-hover: #161616;
+      --border: #1e1e1e;
+      --border-mid: #2a2a2a;
+      --text-bright: #f0f0f0;
+      --text-primary: #c8c8c8;
+      --text-secondary: #888888;
+      --text-muted: #505050;
+      --text-ghost: #333333;
+      --accent: #d4d4d4;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-secondary);
+      font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+      font-weight: 300;
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    ::selection { background: #2a2a2a; color: #fff; }
+    ::-webkit-scrollbar { width: 2px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #1e1e1e; border-radius: 2px; }
+    a { text-decoration: none; color: inherit; }
+
+    /* ── Nav ── */
     .nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(13,13,13,0.94); backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      height: 56px; display: flex; align-items: center;
-      justify-content: space-between; padding: 0 28px;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(24px) saturate(180%);
+      border-bottom: 1px solid rgba(255,255,255,0.055);
+      height: 54px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
     }
-    .nav-brand { font-family: 'Fraunces', Georgia, serif; font-size: 1.05rem; font-weight: 600; color: #e8e8e8; letter-spacing: -0.02em; }
-    .nav-brand span { color: #777777; font-style: italic; }
-    .nav-links { display: flex; align-items: center; gap: 20px; }
-    .nav-link { font-size: 0.72rem; font-family: 'DM Mono', monospace; color: #666666; text-transform: uppercase; letter-spacing: 0.06em; transition: color 0.2s; }
-    .nav-link:hover { color: #a8a8a8; }
-    .nav-cta { font-size: 0.75rem; color: #b0b0b0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 6px 14px; font-weight: 500; transition: all 0.2s; }
-    .nav-cta:hover { color: #fff; background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.15); }
+    .nav-brand {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1rem; font-weight: 600;
+      color: #e8e8e8; letter-spacing: -0.02em;
+    }
+    .nav-brand span { color: #555; font-style: italic; }
+    .nav-right { display: flex; align-items: center; gap: 24px; }
+    .nav-link {
+      font-size: 0.7rem; font-family: 'DM Mono', monospace;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.07em;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: var(--text-secondary); }
+    .nav-cta {
+      font-size: 0.74rem; color: var(--text-secondary);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 6px; padding: 5px 14px; font-weight: 500;
+      transition: all 0.2s;
+    }
+    .nav-cta:hover { color: #fff; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.14); }
 
-    /* Header */
-    .page-header { max-width: 900px; margin: 0 auto; padding: 80px 32px 64px; position: relative; }
-    .page-header::after { content: ''; position: absolute; bottom: 0; left: 32px; right: 32px; height: 1px; background: linear-gradient(90deg, transparent, #2a2a2a 20%, #2a2a2a 80%, transparent); }
-    .page-eyebrow { font-size: 0.68rem; font-family: 'DM Mono', monospace; color: #505050; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
-    .page-eyebrow::before { content: ''; display: block; width: 20px; height: 1px; background: #252525; }
-    .page-title { font-family: 'Fraunces', Georgia, serif; font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 700; color: #e8e8e8; letter-spacing: -0.03em; line-height: 1.08; margin-bottom: 18px; }
-    .page-title em { font-style: italic; color: #666666; }
-    .page-subtitle { font-size: 0.95rem; color: #777777; max-width: 520px; line-height: 1.7; font-weight: 300; }
-    .page-stats { display: flex; align-items: center; gap: 24px; margin-top: 28px; flex-wrap: wrap; }
-    .stat { font-size: 0.68rem; font-family: 'DM Mono', monospace; color: #444444; text-transform: uppercase; letter-spacing: 0.08em; display: flex; align-items: center; gap: 8px; }
-    .stat::before { content: ''; display: block; width: 4px; height: 4px; background: #4a4a4a; border-radius: 50%; }
+    /* ── Page Header ── */
+    .page-header {
+      max-width: 960px; margin: 0 auto;
+      padding: 80px 36px 72px;
+      position: relative;
+    }
+    .header-label {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 0.65rem; font-family: 'DM Mono', monospace;
+      color: var(--text-ghost); text-transform: uppercase; letter-spacing: 0.15em;
+      margin-bottom: 24px;
+    }
+    .header-label::before {
+      content: '';
+      display: block; width: 24px; height: 1px;
+      background: linear-gradient(90deg, transparent, #333);
+    }
+    .header-label::after {
+      content: '';
+      display: block; width: 24px; height: 1px;
+      background: linear-gradient(90deg, #333, transparent);
+    }
+    .page-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 700; color: var(--text-bright);
+      letter-spacing: -0.04em; line-height: 1.0;
+      margin-bottom: 22px;
+    }
+    .page-title em { font-style: italic; color: var(--text-ghost); font-weight: 400; }
+    .page-subtitle {
+      font-size: 0.94rem; color: var(--text-muted);
+      max-width: 480px; line-height: 1.75; font-weight: 300;
+      margin-bottom: 36px;
+    }
+    .header-meta {
+      display: flex; align-items: center; gap: 0;
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+    }
+    .hm-item {
+      font-size: 0.65rem; font-family: 'DM Mono', monospace;
+      color: var(--text-ghost); text-transform: uppercase; letter-spacing: 0.1em;
+      padding-right: 20px; margin-right: 20px;
+      border-right: 1px solid var(--border);
+    }
+    .hm-item:last-child { border-right: none; }
+    .hm-item strong { display: block; font-size: 1rem; font-family: 'Fraunces', serif; color: var(--text-muted); font-weight: 400; letter-spacing: -0.02em; margin-bottom: 2px; }
 
-    /* Posts */
-    .posts-wrap { max-width: 900px; margin: 0 auto; padding: 56px 32px 100px; }
+    /* ── Main ── */
+    .main { max-width: 960px; margin: 0 auto; padding: 0 36px 120px; }
 
-    /* Featured */
-    .post-featured { display: block; margin-bottom: 20px; border-radius: 14px; border: 1px solid #252525; background: rgba(255,255,255,0.05); overflow: hidden; transition: all 0.3s ease; position: relative; }
-    .post-featured::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,0.06) 0%, transparent 60%); pointer-events: none; }
-    .post-featured:hover { border-color: #444444; background: rgba(255,255,255,0.07); transform: translateY(-2px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
-    .featured-inner { padding: 36px 40px; }
+    /* ── Featured post ── */
+    .featured-post {
+      display: block;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      transition: border-color 0.3s, transform 0.3s;
+      margin-bottom: 4px;
+    }
+    .featured-post:hover { border-color: #333; transform: translateY(-3px); }
+    .featured-post:hover .fp-arrow { transform: translateX(5px); }
 
-    /* Card meta */
-    .card-meta { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
-    .meta-tag { font-size: 0.62rem; font-family: 'DM Mono', monospace; color: #505050; background: rgba(255,255,255,0.07); border: 1px solid #2a2a2a; border-radius: 3px; padding: 2px 8px; text-transform: uppercase; letter-spacing: 0.1em; }
-    .meta-date { font-size: 0.68rem; font-family: 'DM Mono', monospace; color: #4a4a4a; letter-spacing: 0.04em; }
-    .meta-read { font-size: 0.68rem; font-family: 'DM Mono', monospace; color: #444444; letter-spacing: 0.04em; }
+    .fp-inner {
+      padding: 40px 44px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 32px;
+      align-items: end;
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 60%);
+    }
+    @media (max-width: 640px) { .fp-inner { grid-template-columns: 1fr; gap: 20px; padding: 28px 24px; } }
 
-    .featured-title { font-family: 'Fraunces', Georgia, serif; font-size: clamp(1.3rem, 3vw, 1.9rem); font-weight: 700; color: #d4d4d4; letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 14px; }
-    .featured-desc { font-size: 0.92rem; color: #3a3a3a; line-height: 1.7; max-width: 580px; margin-bottom: 22px; font-weight: 300; }
+    .fp-eyebrow {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px;
+    }
+    .fp-tag {
+      font-size: 0.6rem; font-family: 'DM Mono', monospace;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.12em;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-mid);
+      border-radius: 3px; padding: 2px 8px;
+    }
+    .fp-date { font-size: 0.65rem; font-family: 'DM Mono', monospace; color: var(--text-ghost); }
+    .fp-read { font-size: 0.65rem; font-family: 'DM Mono', monospace; color: var(--text-ghost); }
 
-    .read-link { display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #555555; font-family: 'DM Mono', monospace; letter-spacing: 0.04em; transition: all 0.2s; }
-    .link-arrow { transition: transform 0.2s; }
-    .post-featured:hover .read-link, .post-card:hover .read-link { color: #999999; }
-    .post-featured:hover .link-arrow, .post-card:hover .link-arrow { transform: translateX(4px); }
+    .fp-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(1.35rem, 3vw, 1.85rem);
+      font-weight: 700; color: var(--text-primary);
+      letter-spacing: -0.025em; line-height: 1.15;
+      margin-bottom: 14px;
+    }
+    .fp-desc {
+      font-size: 0.88rem; color: var(--text-muted);
+      line-height: 1.75; max-width: 560px;
+      font-weight: 300;
+    }
+    .fp-cta {
+      flex-shrink: 0; align-self: flex-end;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+    }
+    @media (max-width: 640px) { .fp-cta { align-items: flex-start; } }
+    .fp-num {
+      font-family: 'Fraunces', serif; font-size: 3.5rem; font-weight: 700;
+      color: var(--border); line-height: 1; letter-spacing: -0.05em;
+      font-style: italic;
+    }
+    .fp-readlink {
+      font-size: 0.72rem; font-family: 'DM Mono', monospace;
+      color: var(--text-muted); letter-spacing: 0.05em;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .fp-arrow { transition: transform 0.25s; }
 
-    /* Section divider */
-    .section-label { font-size: 0.62rem; font-family: 'DM Mono', monospace; color: #383838; text-transform: uppercase; letter-spacing: 0.12em; padding-bottom: 14px; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; margin-top: 40px; margin-bottom: 2px; }
+    /* ── Section header ── */
+    .section-head {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 44px 0 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2px;
+    }
+    .section-head-left { display: flex; align-items: center; gap: 14px; }
+    .section-dot { width: 5px; height: 5px; background: var(--border-mid); border-radius: 50%; }
+    .section-title {
+      font-size: 0.62rem; font-family: 'DM Mono', monospace;
+      color: var(--text-ghost); text-transform: uppercase; letter-spacing: 0.14em;
+    }
+    .section-count {
+      font-size: 0.62rem; font-family: 'DM Mono', monospace;
+      color: var(--text-ghost); letter-spacing: 0.06em;
+    }
 
-    /* Grid */
-    .posts-grid { display: grid; grid-template-columns: 1fr; gap: 2px; }
-    @media (min-width: 600px) { .posts-grid { grid-template-columns: 1fr 1fr; } }
-    @media (min-width: 860px) { .posts-grid { grid-template-columns: 1fr 1fr 1fr; } }
+    /* ── Posts grid ── */
+    .posts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    @media (min-width: 580px) { .posts-grid { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 840px) { .posts-grid { grid-template-columns: 1fr 1fr 1fr; } }
 
-    .post-card { display: block; padding: 24px 20px; border: 1px solid #1e1e1e; background: transparent; transition: all 0.2s; position: relative; }
-    .post-card:hover { background: rgba(255,255,255,0.06); border-color: #141414; z-index: 1; }
-    .card-title { font-family: 'Fraunces', Georgia, serif; font-size: 0.97rem; font-weight: 600; color: #b0b0b0; line-height: 1.35; margin-bottom: 8px; letter-spacing: -0.01em; transition: color 0.2s; }
-    .post-card:hover .card-title { color: #cccccc; }
-    .card-desc { font-size: 0.78rem; color: #666666; line-height: 1.6; margin-bottom: 16px; font-weight: 300; transition: color 0.2s; }
-    .post-card:hover .card-desc { color: #3a3a3a; }
+    .post-card {
+      display: block;
+      background: var(--bg);
+      padding: 26px 24px 22px;
+      transition: background 0.2s;
+      position: relative;
+    }
+    .post-card:hover { background: var(--surface-hover); }
+    .post-card:hover .pc-arrow { transform: translateX(4px); }
 
-    /* Footer */
-    .page-footer { text-align: center; padding: 0 32px 80px; }
-    .footer-link { display: inline-block; font-size: 0.72rem; font-family: 'DM Mono', monospace; color: #444444; text-transform: uppercase; letter-spacing: 0.08em; border: 1px solid #252525; border-radius: 6px; padding: 10px 24px; transition: all 0.2s; }
-    .footer-link:hover { color: #888888; border-color: #4a4a4a; }
+    /* Wide card spans full row on large screens */
+    @media (min-width: 840px) {
+      .post-card.wide { grid-column: span 2; }
+    }
 
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    .page-header { animation: fadeUp 0.5s ease both; }
-    .posts-wrap { animation: fadeUp 0.5s ease 0.08s both; }
+    .pc-meta {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px;
+    }
+    .pc-tag {
+      font-size: 0.58rem; font-family: 'DM Mono', monospace;
+      color: var(--text-ghost); text-transform: uppercase; letter-spacing: 0.1em;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 2px; padding: 2px 6px;
+    }
+    .pc-date { font-size: 0.63rem; font-family: 'DM Mono', monospace; color: var(--text-ghost); }
+    .pc-min { font-size: 0.63rem; font-family: 'DM Mono', monospace; color: var(--text-ghost); }
+
+    .pc-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 0.98rem; font-weight: 600;
+      color: var(--text-secondary); letter-spacing: -0.015em; line-height: 1.35;
+      margin-bottom: 9px;
+      transition: color 0.2s;
+    }
+    .post-card:hover .pc-title { color: var(--text-primary); }
+
+    .pc-desc {
+      font-size: 0.77rem; color: var(--text-ghost);
+      line-height: 1.65; font-weight: 300;
+      margin-bottom: 18px;
+      transition: color 0.2s;
+    }
+    .post-card:hover .pc-desc { color: var(--text-muted); }
+
+    .pc-read {
+      font-size: 0.68rem; font-family: 'DM Mono', monospace;
+      color: var(--text-ghost); letter-spacing: 0.04em;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .post-card:hover .pc-read { color: var(--text-muted); }
+    .pc-arrow { transition: transform 0.2s; }
+
+    /* ── Newsletter / CTA strip ── */
+    .cta-strip {
+      margin-top: 4px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 32px 40px;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.025) 0%, transparent 100%);
+    }
+    @media (max-width: 640px) { .cta-strip { flex-direction: column; align-items: flex-start; padding: 24px 22px; } }
+    .cta-text {}
+    .cta-label {
+      font-size: 0.6rem; font-family: 'DM Mono', monospace;
+      color: var(--text-ghost); text-transform: uppercase; letter-spacing: 0.14em;
+      margin-bottom: 6px;
+    }
+    .cta-heading {
+      font-family: 'Fraunces', serif;
+      font-size: 1.05rem; font-weight: 600;
+      color: var(--text-secondary); letter-spacing: -0.02em; line-height: 1.2;
+    }
+    .cta-heading em { font-style: italic; color: var(--text-ghost); }
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.74rem; font-family: 'DM Mono', monospace;
+      color: var(--text-muted);
+      border: 1px solid var(--border-mid);
+      border-radius: 7px; padding: 9px 20px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .cta-btn:hover { color: var(--text-primary); border-color: #555; background: rgba(255,255,255,0.04); }
+
+    /* ── Footer ── */
+    .page-footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 36px;
+      max-width: 960px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      flex-wrap: wrap;
+    }
+    .footer-brand {
+      font-family: 'Fraunces', serif; font-size: 0.9rem; font-weight: 600;
+      color: var(--text-ghost); letter-spacing: -0.02em;
+    }
+    .footer-brand span { font-style: italic; }
+    .footer-link {
+      font-size: 0.68rem; font-family: 'DM Mono', monospace;
+      color: var(--text-ghost); text-transform: uppercase; letter-spacing: 0.07em;
+      transition: color 0.2s;
+    }
+    .footer-link:hover { color: var(--text-muted); }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .page-header { animation: fadeUp 0.55s ease both; }
+    .featured-post { animation: fadeUp 0.55s ease 0.08s both; }
+    .section-head  { animation: fadeUp 0.55s ease 0.14s both; }
+    .posts-grid    { animation: fadeUp 0.55s ease 0.18s both; }
+    .cta-strip     { animation: fadeUp 0.55s ease 0.24s both; }
 
     @media (max-width: 640px) {
-      .page-header { padding: 52px 20px 44px; }
-      .featured-inner { padding: 24px 22px; }
-      .posts-wrap { padding: 40px 20px 80px; }
+      .page-header { padding: 52px 20px 52px; }
+      .main { padding: 0 20px 80px; }
+      .fp-inner { padding: 26px 22px; }
+      .page-footer { padding: 20px; }
     }
   </style>
 </head>
 <body>
+
   <nav class="nav">
     <a href="https://www.ihatepdf.cv" class="nav-brand">ihatepdf<span>.</span>cv</a>
-    <div class="nav-links">
-      <a href="../index.html" class="nav-link">Tools</a>
+    <div class="nav-right">
+      <a href="https://www.ihatepdf.cv" class="nav-link">Tools</a>
       <a href="https://www.ihatepdf.cv" class="nav-cta">Open app →</a>
     </div>
   </nav>
 
   <header class="page-header">
-    <div class="page-eyebrow">ihatepdf.cv</div>
+    <div class="header-label">ihatepdf.cv / blog</div>
     <h1 class="page-title">Engineering &amp;<br><em>Guides</em></h1>
     <p class="page-subtitle">Deep-dives into how ihatepdf.cv works, PDF tool comparisons, and step-by-step guides — all free, no sign-up, no upload.</p>
-    <div class="page-stats">
-      <span class="stat" id="post-count">4 posts</span>
-      <span class="stat">WebAssembly</span>
-      <span class="stat">Privacy</span>
-      <span class="stat">PDF tools</span>
+    <div class="header-meta">
+      <div class="hm-item">
+        <strong>8</strong>
+        Posts
+      </div>
+      <div class="hm-item">
+        <strong>WASM</strong>
+        Engine
+      </div>
+      <div class="hm-item">
+        <strong>0</strong>
+        Uploads
+      </div>
+      <div class="hm-item">
+        <strong>100%</strong>
+        Browser
+      </div>
     </div>
   </header>
 
-  <main class="posts-wrap">
+  <main class="main">
 
-    <!-- ── Featured post ── -->
-    <a href="how-it-works.html" class="post-featured">
-      <div class="featured-inner">
-        <div class="card-meta">
-          <span class="meta-tag">Engineering</span>
-          <span class="meta-date">Mar 2025</span>
-          <span class="meta-read">12 min read</span>
+    <!-- ── Featured ── -->
+    <a href="how-it-works.html" class="featured-post">
+      <div class="fp-inner">
+        <div>
+          <div class="fp-eyebrow">
+            <span class="fp-tag">Engineering</span>
+            <span class="fp-date">Mar 2025</span>
+            <span class="fp-read">12 min</span>
+          </div>
+          <h2 class="fp-title">Building a Client-Side PDF Engine —<br>How ihatepdf.cv Processes 150MB Files<br>Entirely in Your Browser</h2>
+          <p class="fp-desc">WebAssembly, memory management, device-adaptive processing, and why privacy-as-architecture is fundamentally different from privacy-as-policy. Full engineering story with code.</p>
         </div>
-        <h2 class="featured-title">Building a Client-Side PDF Engine — How ihatepdf.cv Processes 150MB Files Entirely in Your Browser</h2>
-        <p class="featured-desc">WebAssembly, memory management, device-adaptive processing, and why privacy-as-architecture is fundamentally different from privacy-as-policy. Full engineering story with code.</p>
-        <span class="read-link">Read post <span class="link-arrow">→</span></span>
+        <div class="fp-cta">
+          <div class="fp-num">01</div>
+          <span class="fp-readlink">Read post <span class="fp-arrow">→</span></span>
+        </div>
       </div>
     </a>
 
-    <!-- ── All posts grid ── -->
-    <div class="section-label">
-      <span>All posts</span>
-      <span id="grid-count">3 more</span>
+    <!-- ── Grid ── -->
+    <div class="section-head">
+      <div class="section-head-left">
+        <div class="section-dot"></div>
+        <span class="section-title">All posts</span>
+      </div>
+      <span class="section-count">7 articles</span>
     </div>
 
     <div class="posts-grid">
 
       <a href="comparison.html" class="post-card">
-        <div class="card-meta">
-          <span class="meta-date">Sep 2025</span>
-          <span class="meta-read">9 min read</span>
+        <div class="pc-meta">
+          <span class="pc-tag">Comparison</span>
+          <span class="pc-date">Sep 2025</span>
+          <span class="pc-min">9 min</span>
         </div>
-        <h2 class="card-title">ihatepdf.cv vs iLovePDF vs Smallpdf vs Adobe — Honest Comparison 2025</h2>
-        <p class="card-desc">Which "free" PDF tool is actually free? Tested on privacy, watermarks, file limits, and offline use.</p>
-        <span class="read-link">Read <span class="link-arrow">→</span></span>
+        <h2 class="pc-title">ihatepdf.cv vs iLovePDF vs Smallpdf vs Adobe — Honest Comparison 2025</h2>
+        <p class="pc-desc">Which "free" PDF tool is actually free? Tested on privacy, watermarks, file limits, and offline use.</p>
+        <span class="pc-read">Read <span class="pc-arrow">→</span></span>
       </a>
 
       <a href="merge-pdf-deep-dive.html" class="post-card">
-        <div class="card-meta">
-          <span class="meta-date">Oct 2025</span>
-          <span class="meta-read">8 min read</span>
+        <div class="pc-meta">
+          <span class="pc-tag">Engineering</span>
+          <span class="pc-date">Oct 2025</span>
+          <span class="pc-min">8 min</span>
         </div>
-        <h2 class="card-title">I Built a PDF Merger That Runs Entirely in Your Browser — Here's How</h2>
-        <p class="card-desc">pdf-lib, drag-and-drop state management, Safari download fallbacks, and the 20-line core that powers it all.</p>
-        <span class="read-link">Read <span class="link-arrow">→</span></span>
+        <h2 class="pc-title">I Built a PDF Merger That Runs Entirely in Your Browser — Here's How</h2>
+        <p class="pc-desc">pdf-lib, drag-and-drop state management, Safari download fallbacks, and the 20-line core that powers it all.</p>
+        <span class="pc-read">Read <span class="pc-arrow">→</span></span>
       </a>
 
       <a href="jpg-to-pdf-converter.html" class="post-card">
-    <div class="card-meta">
-      <span class="meta-date">Mar 2026</span>
-      <span class="meta-read">6 min read</span>
-    </div>
-    <h2 class="card-title">I Stopped Emailing Myself Photos — Here's the Tool That Fixed Everything</h2>
-    <p class="card-desc">How a free, privacy-first browser tool became the go-to for converting images to PDF. Files never leave your device.</p>
-    <span class="read-link">Read <span class="link-arrow">→</span></span>
-  </a>
+        <div class="pc-meta">
+          <span class="pc-tag">Guide</span>
+          <span class="pc-date">Mar 2026</span>
+          <span class="pc-min">6 min</span>
+        </div>
+        <h2 class="pc-title">I Stopped Emailing Myself Photos — Here's the Tool That Fixed Everything</h2>
+        <p class="pc-desc">How a free, privacy-first browser tool became the go-to for converting images to PDF. Files never leave your device.</p>
+        <span class="pc-read">Read <span class="pc-arrow">→</span></span>
+      </a>
 
-       <a href="compress-pdf.html" class="post-card">
-    <div class="card-meta">
-      <span class="meta-date">Mar 2026</span>
-      <span class="meta-read">6 min read</span>
-    </div>
-    <h2 class="card-title">I ran Ghostscript in the browser</h2>
-    <p class="card-desc">How a free, privacy-first browser tool became the go-to for compress PDF. Files never leave your device.</p>
-    <span class="read-link">Read <span class="link-arrow">→</span></span>
-  </a>
+      <a href="compress-pdf.html" class="post-card">
+        <div class="pc-meta">
+          <span class="pc-tag">Engineering</span>
+          <span class="pc-date">Mar 2026</span>
+          <span class="pc-min">6 min</span>
+        </div>
+        <h2 class="pc-title">I Ran Ghostscript in the Browser</h2>
+        <p class="pc-desc">How a professional-grade compression engine was compiled to WebAssembly and made to run client-side — without a server in sight.</p>
+        <span class="pc-read">Read <span class="pc-arrow">→</span></span>
+      </a>
 
       <a href="pdf-to-jpg.html" class="post-card">
-    <div class="card-meta">
-      <span class="meta-date">Mar 2026</span>
-      <span class="meta-read">6 min read</span>
-    </div>
-    <h2 class="card-title">PDF to JPG deep dive/h2>
-    <p class="card-desc">How 600 DPI Browser PDF-to-Image Works — Engineering Deep Dive.</p>
-    <span class="read-link">Read <span class="link-arrow">→</span></span>
-  </a>
+        <div class="pc-meta">
+          <span class="pc-tag">Engineering</span>
+          <span class="pc-date">Mar 2026</span>
+          <span class="pc-min">6 min</span>
+        </div>
+        <h2 class="pc-title">600 DPI Browser PDF-to-Image — Engineering Deep Dive</h2>
+        <p class="pc-desc">How high-resolution PDF rendering works in the browser, and why DPI matters more than most tools let you control.</p>
+        <span class="pc-read">Read <span class="pc-arrow">→</span></span>
+      </a>
 
-       <a href="pdf-to-doc.html" class="post-card">
-    <div class="card-meta">
-      <span class="meta-date">Mar 2026</span>
-      <span class="meta-read">6 min read</span>
-    </div>
-    <h2 class="card-title">Pdf to word converter/h2>
-    <p class="card-desc">I Built a PDF to Word Converter That Places Every Word at Its Exact Coordinates.</p>
-    <span class="read-link">Read <span class="link-arrow">→</span></span>
-  </a>
+      <a href="pdf-to-doc.html" class="post-card">
+        <div class="pc-meta">
+          <span class="pc-tag">Engineering</span>
+          <span class="pc-date">Mar 2026</span>
+          <span class="pc-min">6 min</span>
+        </div>
+        <h2 class="pc-title">I Built a PDF to Word Converter That Places Every Word at Its Exact Coordinates</h2>
+        <p class="pc-desc">Extracting positional text data from PDFs and reconstructing it faithfully in a .docx file — all without a server.</p>
+        <span class="pc-read">Read <span class="pc-arrow">→</span></span>
+      </a>
 
-        <a href="split-pdf.html" class="post-card">
-    <div class="card-meta">
-      <span class="meta-date">Mar 2026</span>
-      <span class="meta-read">6 min read</span>
-    </div>
-    <h2 class="card-title">Split PDF/h2>
-    <p class="card-desc">I Built a PDF Splitter That Never Touches Your Files.</p>
-    <span class="read-link">Read <span class="link-arrow">→</span></span>
-  </a>
+      <a href="split-pdf.html" class="post-card">
+        <div class="pc-meta">
+          <span class="pc-tag">Guide</span>
+          <span class="pc-date">Mar 2026</span>
+          <span class="pc-min">5 min</span>
+        </div>
+        <h2 class="pc-title">I Built a PDF Splitter That Never Touches Your Files</h2>
+        <p class="pc-desc">Page ranges, single-page extraction, visual selection — all processed in-browser using pdf-lib with zero server calls.</p>
+        <span class="pc-read">Read <span class="pc-arrow">→</span></span>
+      </a>
 
-       <a href="add-page-numbers.html" class="post-card">
-    <div class="card-meta">
-      <span class="meta-date">Mar 2026</span>
-      <span class="meta-read">6 min read</span>
-    </div>
-    <h2 class="card-title">Add Page Numbers/h2>
-    <p class="card-desc">Add Page Numbers to a PDF Free. No Sign Up. No Watermark.</p>
-    <span class="read-link">Read <span class="link-arrow">→</span></span>
-  </a>
+      <a href="add-page-numbers.html" class="post-card wide">
+        <div class="pc-meta">
+          <span class="pc-tag">Guide</span>
+          <span class="pc-date">Mar 2026</span>
+          <span class="pc-min">7 min</span>
+        </div>
+        <h2 class="pc-title">Add Page Numbers to a PDF Free — No Sign Up, No Watermark</h2>
+        <p class="pc-desc">Custom formats (1,2,3 / i,ii,iii / A,B,C), six positions, full color control — entirely in your browser. Here's what most tools get wrong, and how ihatepdf.cv gets it right.</p>
+        <span class="pc-read">Read <span class="pc-arrow">→</span></span>
+      </a>
 
-
     </div>
+
+    <!-- ── CTA strip ── -->
+    <div class="cta-strip">
+      <div class="cta-text">
+        <div class="cta-label">ihatepdf.cv</div>
+        <div class="cta-heading">All tools, <em>free forever.</em><br>No upload. No account.</div>
+      </div>
+      <a href="https://www.ihatepdf.cv" class="cta-btn">
+        Open PDF tools →
+      </a>
+    </div>
+
   </main>
 
-  <div class="page-footer">
-    <a href="https://www.ihatepdf.cv" class="footer-link">← Back to all PDF tools</a>
-  </div>
+  <footer class="page-footer">
+    <span class="footer-brand">ihatepdf<span>.</span>cv</span>
+    <a href="https://www.ihatepdf.cv" class="footer-link">← All PDF tools</a>
+  </footer>
+
 </body>
 </html>
